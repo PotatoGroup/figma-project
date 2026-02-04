@@ -1,0 +1,35 @@
+{
+  "name": "@figma-project/extractors",
+  "version": "0.0.1",
+  "description": "Flexible Figma Data Extractors",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "dev": "father dev",
+    "build": "father build",
+    "build:deps": "father prebundle",
+    "prepublishOnly": "father doctor && npm run build"
+  },
+  "keywords": [],
+  "authors": [
+    "1302947749@qq.com"
+  ],
+  "license": "MIT",
+  "files": [
+    "lib",
+    "esm",
+    "compiled"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.0",
+    "father": "^4.6.13"
+  },
+  "dependencies": {
+    "@figma/rest-api-spec": "^0.36.0",
+    "remeda": "^2.33.4",
+    "sharp": "^0.34.5"
+  }
+}

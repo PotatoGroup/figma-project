@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "strict": true,
+    "lib": ["ESNext"],
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true,
+    "jsx": "react",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "compileOnSave": true
+}
