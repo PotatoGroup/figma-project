@@ -27,4 +27,7 @@ export {
   layoutOnly,
 } from "./built-in.js";
 
-export * from './utils/image-processing.js'
+export * from './utils/image-processing.js';
+export { parseFigmaUrl } from './utils/figma-url-parser.js';
+export type { FigmaUrlInfo } from './utils/figma-url-parser.js';
+export { smartExtractImageNodes } from './utils/image-extractor.js';

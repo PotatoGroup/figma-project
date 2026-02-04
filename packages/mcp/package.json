@@ -2,11 +2,11 @@
   "name": "ant-frontend-mcp",
   "version": "0.0.1",
   "description": "ant group frontend mcp",
-  "main": "dist/cjs/index.js",
-  "types": "dist/cjs/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "dev": "father dev",
-    "build": "father build",
+    "build": "father build && cp -r src/prompts lib",
     "build:deps": "father prebundle",
     "prepublishOnly": "father doctor && npm run build"
   },
@@ -16,13 +16,26 @@
   ],
   "license": "MIT",
   "files": [
-    "dist",
+    "lib",
+    "esm",
     "compiled"
   ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "@types/node": "^25.2.0",
+    "@types/yargs": "^17.0.33",
     "father": "^4.6.13"
+  },
+  "dependencies": {
+    "@figma-project/extractors": "workspace:*",
+    "@figma-project/service": "workspace:*",
+    "@figma/rest-api-spec": "^0.36.0",
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "dotenv": "^17.2.3",
+    "js-yaml": "^4.1.1",
+    "yargs": "^17.7.2",
+    "zod": "^4.3.6"
   }
 }

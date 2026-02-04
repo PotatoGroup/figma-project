@@ -2,8 +2,8 @@
   "name": "@figma-project/service",
   "version": "0.0.1",
   "description": "figma service",
-  "main": "dist/cjs/index.js",
-  "types": "dist/cjs/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "dev": "father dev",
     "build": "father build",
@@ -16,7 +16,8 @@
   ],
   "license": "MIT",
   "files": [
-    "dist",
+    "lib",
+    "esm",
     "compiled"
   ],
   "publishConfig": {
