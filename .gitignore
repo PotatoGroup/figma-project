@@ -1,8 +1,13 @@
-.turbo
 .DS_Store
 node_modules
+
+# 所有包的构建产物（lib/esm 为 father 输出，dist/compiled 为备用或缓存）
+lib
+esm
 dist
 compiled
+.turbo
+
 .env
 .env.local
 .env.development.local

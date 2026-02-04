@@ -1,1 +1,0 @@
-{"version":3,"file":"design-extractor.d.ts","sourceRoot":"","sources":["design-extractor.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EACV,eAAe,EACf,oBAAoB,EAIrB,MAAM,sBAAsB,CAAC;AAG9B,OAAO,KAAK,EAAE,WAAW,EAAE,gBAAgB,EAAc,gBAAgB,EAAE,MAAM,YAAY,CAAC;AAG9F;;GAEG;AACH,wBAAgB,sBAAsB,CACpC,WAAW,EAAE,eAAe,GAAG,oBAAoB,EACnD,cAAc,EAAE,WAAW,EAAE,EAC7B,OAAO,GAAE,gBAAqB,GAC7B,gBAAgB,CAqBlB"}
