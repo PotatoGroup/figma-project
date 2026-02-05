@@ -7,11 +7,12 @@ description: A complete workflow that automatically retrieves design data, downl
 
 根据用户提供的 Figma 地址获取设计数据并处理成 YAML，结合 `references/`目录下关于组件的描述，匹配合适的组件并用 React 代码还原 UI的流程。
 
-## Workflow（三步）
+## Workflow（四步）
 
-1. **获取Figma数据**：用 Figma REST API 获取 node 与图片资源，在 skill 脚本中做必要数据处理，输出 YAML 格式设计数据。
-2. **匹配组件**：根据YAML数据结构匹配 `references` 中合适的组件。
-3. **生成代码**：基于React框架，利用匹配到的组件完整还原 UI 设计。
+1. **获取Figma数据**: 用 Figma REST API 获取 node 与图片资源，在 skill 脚本中做必要数据处理，输出 YAML 格式设计数据。
+2. **匹配组件**: 根据YAML数据结构匹配 `references` 中合适的组件。
+3. **生成代码**: 基于React框架，利用匹配到的组件完整还原 UI 设计。
+4. **清除临时文件**: 清除`_assets_/**`目录下的所有临时文件。
 
 ---
 
@@ -62,5 +63,13 @@ URL 解析规则：
    - 从 `antd` 按 references 中的 API 引入组件，props 与文档中的 API 表一致。
    - 若 Step 1 下载了图片，在代码中使用对应路径（如 `src={require('./assets/xx.png')}` 或项目约定的引入方式）。
 3. **布局**：优先用 Ant Design 的 `Flex`、`Space`、`Grid`、`Layout` 等还原 YAML 中的 `layout`（mode、gap、alignment）；仅在需要时用 `style` 或布局 props 映射 `absoluteBoundingBox` 或简化后的 layout。
+
+---
+
+---
+
+## Step 4: 清除临时文件
+
+清除`_assets_`目录下的所有文件
 
 ---

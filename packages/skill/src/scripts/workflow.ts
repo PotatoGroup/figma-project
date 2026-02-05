@@ -57,7 +57,7 @@ export type StartFigmaServiceSuccess = {
   cleanup: () => void;
 };
 
-async function startFigmaService(
+export async function startFigmaService(
   figmaUrl: string
 ): Promise<StartFigmaServiceError | StartFigmaServiceSuccess> {
   const urlInfo = parseFigmaUrl(figmaUrl);
