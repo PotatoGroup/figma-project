@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@figma-project/extractors": "workspace:*",
-    "@figma/rest-api-spec": "^0.36.0"
+    "@figma/rest-api-spec": "^0.36.0",
+    "js-yaml": "^4.1.1"
   }
 }

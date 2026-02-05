@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { parseFigmaUrl, smartExtractImageNodes } from '@figma-project/extractors'
-import type { FigmaService } from '@figma-project/service'
+import { FigmaService } from '@figma-project/service'
 import path from 'path'
 import { getFigmaDataTool } from './get_figma_data'
 import { getFigmaImagesTool } from './get_figma_images'

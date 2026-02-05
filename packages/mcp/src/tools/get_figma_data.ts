@@ -1,8 +1,6 @@
 import { z } from 'zod'
-import type { FigmaService } from '@figma-project/service'
-import type { GetFileResponse, GetFileNodesResponse } from '@figma/rest-api-spec';
-import { simplifyRawFigmaObject, allExtractors } from "@figma-project/extractors";
-import yaml from "js-yaml";
+import { FigmaService } from '@figma-project/service'
+import { fetchFigmaData } from '@figma-project/service'
 
 const parameters = {
   fileKey: z
@@ -29,24 +27,9 @@ export type GetFigmaDataParams = z.infer<typeof parametersSchema>;
 
 const getFigmaData = async (params: GetFigmaDataParams, figmaService: FigmaService, outputFormat: "yaml" | "json") => {
   try {
-    const { fileKey, nodeId, depth } = params;
-    let rawFigmaResponse: GetFileResponse | GetFileNodesResponse;
-    if (nodeId) {
-      rawFigmaResponse = await figmaService.getRawNodes(fileKey, nodeId, depth);
-    } else {
-      rawFigmaResponse = await figmaService.getRawFile(fileKey, depth);
-    }
-    const simplifiedDesign = simplifyRawFigmaObject(rawFigmaResponse, allExtractors, {
-      maxDepth: depth ?? 10,
-    });
-    const { nodes, globalVars, ...metadata } = simplifiedDesign;
-    const result = {
-      metadata,
-      nodes,
-      globalVars,
-    };
+    const result = await fetchFigmaData(figmaService, params);
     const formattedResult =
-      outputFormat === "json" ? JSON.stringify(result, null, 2) : yaml.dump(result);
+      outputFormat === "json" ? JSON.stringify(result, null, 2) : result;
     return {
       content: [{ type: "text" as const, text: formattedResult }],
     };

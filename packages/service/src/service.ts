@@ -8,7 +8,7 @@ import type {
 import { downloadAndProcessImage, type ImageProcessingResult } from '@figma-project/extractors'
 import path from 'path'
 
-type GetImagesParams = {
+export type GetImagesParams = {
   imageRef?: string;
   nodeId?: string;
   fileName: string;
