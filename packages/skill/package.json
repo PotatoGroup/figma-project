@@ -1,5 +1,5 @@
 {
-  "name": "@figma-project/skill",
+  "name": "ant-figma-skill",
   "version": "0.0.1",
   "description": "ant group figma skill",
   "main": "dist/cjs/index.js",

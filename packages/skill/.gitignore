@@ -1,5 +1,7 @@
 /node_modules
+/dist
 /lib
 /esm
 /compiled
 .DS_Store
+*.zip
