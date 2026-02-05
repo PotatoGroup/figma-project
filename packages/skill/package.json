@@ -1,7 +1,7 @@
 {
-  "name": "ant-frontend-skill",
+  "name": "@figma-project/skill",
   "version": "0.0.1",
-  "description": "ant group frontend skill",
+  "description": "ant group figma skill",
   "main": "dist/cjs/index.js",
   "types": "dist/cjs/index.d.ts",
   "scripts": {

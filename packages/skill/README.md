@@ -1,7 +1,7 @@
-# ant-frontend-skill
+# ant-figma-skill
 
-[![NPM version](https://img.shields.io/npm/v/ant-frontend-skill.svg?style=flat)](https://npmjs.com/package/ant-frontend-skill)
-[![NPM downloads](http://img.shields.io/npm/dm/ant-frontend-skill.svg?style=flat)](https://npmjs.com/package/ant-frontend-skill)
+[![NPM version](https://img.shields.io/npm/v/ant-figma-skill.svg?style=flat)](https://npmjs.com/package/ant-figma-skill)
+[![NPM downloads](http://img.shields.io/npm/dm/ant-figma-skill.svg?style=flat)](https://npmjs.com/package/ant-figma-skill)
 
 前端协作 Skill 包：提供「Figma 设计 → 数据获取 → 组件匹配 → React 代码生成」的流程说明、参考规范与可执行脚本，供 AI 或开发者按步骤完成从设计稿到 Ant Design React 组件的还原。
 
@@ -36,8 +36,7 @@ pnpm run build
 ## 使用场景
 
 1. **AI 协作**：将 `SKILL.md` 与 `reference/` 作为上下文，按「获取数据 → 匹配组件 → 生成代码」执行
-2. **与 MCP 配合**：使用 **ant-frontend-mcp** 的 FigmaSmartWorkflow 获取设计数据与图片后，再结合本包中的 `reference` 做组件匹配与代码生成
-3. **本地脚本**：在配置好 `FIGMA_ACCESS_TOKEN` 等环境后，运行 `dist/scripts/index.js` 完成流程中的自动化步骤（若脚本已实现）
+2. **本地脚本**：在配置好 `FIGMA_ACCESS_TOKEN` 等环境后，运行 `dist/scripts/index.js` 完成流程中的自动化步骤（若脚本已实现）
 
 ## 依赖
 

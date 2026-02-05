@@ -8,19 +8,33 @@
 - **构建**: [Turborepo](https://turbo.build/) + [Father](https://github.com/umijs/father)
 - **语言**: TypeScript
 
+## 项目结构
+
+```
+figma-project/
+├── packages/
+│   ├── extractors/   # 设计数据提取与图片处理
+│   ├── service/      # Figma REST API 封装
+│   ├── mcp/          # MCP 服务（ant-figma-mcp）
+│   └── skill/        # 技能与参考（@figma-project/skill）
+├── pnpm-workspace.yaml
+├── turbo.json
+└── package.json
+```
+
 ## 能力概览
 
-| 包名                          | 能力说明                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **@figma-project/extractors** | 从 Figma 原始节点提取结构化数据：布局（layout）、文本与文本样式（text/textStyle）、视觉（fills/strokes/effects/opacity/borderRadius）、组件实例（componentId/componentProperties）；提供 `simplifyRawFigmaObject` 统一简化整文件/节点树，支持按需组合内置 extractor（如 `layoutAndText`、`allExtractors`）。图片相关：基于 sharp 的裁剪与尺寸处理（`downloadAndProcessImage`）、Figma 变换矩阵裁剪；Figma URL 解析（`parseFigmaUrl`）；从设计数据中智能识别并提取图片节点（`smartExtractImageNodes`）。 |
-| **@figma-project/service**    | 封装 Figma REST API：`getRawFile` / `getRawNodes` 获取文件或节点原始 JSON；`getImageFillUrls` 获取图片填充 URL 映射；`getNodeRenderUrls` 获取节点渲染图 URL（PNG/SVG，支持 scale 与 svg 选项）；`getImages` 按配置下载图片到本地并调用 extractors 进行裁剪与尺寸处理，支持 imageRef 与 nodeId 两种来源。                                                                                                                                                                                                |
-| **ant-frontend-mcp**          | MCP 服务，对外提供四个工具：**get_figma_data**（按 fileKey/nodeId 获取设计数据，输出 YAML 或 JSON）；**get_figma_images**（根据节点列表下载 PNG/SVG 到指定目录，支持裁剪与尺寸信息）；**figma_workflow_orchestrator**（一站式工作流：解析 Figma URL → 拉取数据 → 自动识别并下载图片 → 生成 React 组件代码规则）；**react_component_generator**（基于 Figma 数据与图片信息生成 React + Ant Design 组件代码的提示与规范）。需配置 `FIGMA_ACCESS_TOKEN`。                                                  |
-| **ant-frontend-skill**        | 占位包，暂无业务实现。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 包名 | 能力说明 |
+|------|----------|
+| **@figma-project/extractors** | **数据提取**：从 Figma 原始节点提取布局（layout）、文本与样式（text/textStyle）、视觉（fills/strokes/effects/opacity/borderRadius）、组件实例（componentId/componentProperties）；`simplifyRawFigmaObject` 统一简化整文件/节点树，支持 `layoutAndText`、`allExtractors` 等组合。<br>**图片**：基于 sharp 的裁剪与尺寸处理、Figma 变换矩阵裁剪；`parseFigmaUrl` 解析 Figma URL；`smartExtractImageNodes` 智能识别并提取图片节点。 |
+| **@figma-project/service** | 封装 Figma REST API：`getRawFile` / `getRawNodes` 获取文件或节点原始 JSON；`getImageFillUrls` 图片填充 URL 映射；`getNodeRenderUrls` 节点渲染图 URL（PNG/SVG，支持 scale）；`getImages` 下载图片到本地并调用 extractors 做裁剪与尺寸处理（支持 imageRef / nodeId）。 |
+| **ant-figma-mcp** | MCP 服务，提供四类工具：**get_figma_data**（按 fileKey/nodeId 获取设计数据，输出 YAML/JSON）；**get_figma_images**（按节点列表下载 PNG/SVG 到指定目录）；**figma_workflow_orchestrator**（一站式：解析 URL → 拉取数据 → 下载图片 → 生成 React 组件规则）；**react_component_generator**（基于 Figma 数据与图片生成 React + Ant Design 组件提示与规范）。需配置 `FIGMA_ACCESS_TOKEN`。 |
+| **@figma-project/skill** | 技能与参考包，提供 Figma 相关技能说明与参考文档（如 antd 组件映射、节点映射等），供 Cursor 等场景使用。 |
 
 ## 环境要求
 
-- Node.js（建议 18+）
-- pnpm 10.x（见根目录 `packageManager`）
+- **Node.js** ≥ 20（见根目录 `package.json` 的 `engines`）
+- **pnpm** ≥ 10（根目录 `packageManager`: `pnpm@10.13.1`）
 
 ## 快速开始
 
@@ -90,22 +104,36 @@ const rawNodes = rawFigmaResponse.document.children;
 const { nodes } = extractFromDesign(rawNodes, layoutAndText, { maxDepth: 10 });
 ```
 
-### 使用 MCP 服务（ant-frontend-mcp）
+### 使用 MCP 服务（ant-figma-mcp）
 
-在 Cursor 等支持 MCP 的 IDE 中配置 `ant-frontend-mcp` 后，可通过工具调用：
+在 Cursor 等支持 MCP 的 IDE 中配置 **ant-figma-mcp** 后，可通过以下工具调用：
 
-- **figma_workflow_orchestrator**：传入 Figma 设计链接，自动完成「取数 → 下载图片 → 生成 React 组件规则」全流程（推荐）。
-- **get_figma_data**：仅拉取设计数据（fileKey、可选 nodeId、depth），输出 YAML/JSON。
-- **get_figma_images**：按节点列表将 PNG/SVG 下载到指定 `localPath`。
-- **react_component_generator**：传入已有 Figma 数据与图片信息，获取用于生成 React + Ant Design 组件的提示与规范。
+| 工具 | 说明 |
+|------|------|
+| **figma_workflow_orchestrator** | 传入 Figma 设计链接，自动完成「取数 → 下载图片 → 生成 React 组件规则」全流程（推荐） |
+| **get_figma_data** | 按 fileKey（可选 nodeId、depth）拉取设计数据，输出 YAML/JSON |
+| **get_figma_images** | 按节点列表将 PNG/SVG 下载到指定 `localPath`，支持裁剪与尺寸信息 |
+| **react_component_generator** | 传入 Figma 数据与图片信息，获取生成 React + Ant Design 组件的提示与规范 |
 
-需在运行环境中设置 `FIGMA_ACCESS_TOKEN`（或在 `.env` 中配置）。
+运行前需在环境中设置 `FIGMA_ACCESS_TOKEN`（或在 MCP 包目录下的 `.env` 中配置）。
 
 ## 依赖关系
 
-- `service` 依赖 `extractors`（workspace 协议 `workspace:*`）
-- `mcp` 依赖 `extractors`、`service`
-- `skill` 当前无内部依赖
+```
+extractors     (无内部 workspace 依赖)
+    ↑
+service        (依赖 extractors)
+    ↑
+mcp            (依赖 extractors、service)
+skill          (无内部 workspace 依赖)
+```
+
+## 更多文档
+
+- [extractors 使用说明](packages/extractors/README.md)
+- [service API 说明](packages/service/README.md)
+- [MCP 配置与工具说明](packages/mcp/README.md)
+- [skill 技能与参考](packages/skill/README.md)
 
 ## 许可证
 
