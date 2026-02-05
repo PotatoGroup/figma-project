@@ -42,14 +42,14 @@ const parameters = {
 };
 
 const parametersSchema = z.object(parameters);
-export type FigmaWorkflowOrchestratorParams = z.infer<typeof parametersSchema>;
+export type FigmaSmartWorkflowParams = z.infer<typeof parametersSchema>;
 
 /**
  * Figma工作流编排器
  * 自动化执行：解析URL -> 获取数据 -> 下载图片 -> 生成React组件
  */
-const figmaWorkflowOrchestrator = async (
-  params: FigmaWorkflowOrchestratorParams,
+const figmaSmartWorkflow = async (
+  params: FigmaSmartWorkflowParams,
   figmaService: FigmaService,
   outputFormat: "yaml" | "json" = "yaml"
 ) => {
@@ -183,9 +183,9 @@ ${rules.content[0]?.text || ''}
   }
 };
 
-export const figmaWorkflowOrchestratorTool = {
-  name: "figma_workflow_orchestrator",
-  description: "智能Figma工作流：根据输入的Figma URL，自动获取设计数据、下载图片资源、生成React组件代码的完整流程（首选）",
+export const figmaSmartWorkflowTool = {
+  name: "FigmaSmartWorkflow",
+  description: "A complete workflow that automatically retrieves design data, downloads image resources, and generates React component code based on the Figma URL entered by the user (preferred).",
   parameters,
-  execute: figmaWorkflowOrchestrator,
+  execute: figmaSmartWorkflow,
 };

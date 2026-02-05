@@ -1,17 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { FigmaService } from '@figma-project/service'
-import {
-  getFigmaDataTool,
-  getFigmaImagesTool,
-  reactComponentGeneratorTool,
-  figmaWorkflowOrchestratorTool
-} from './tools'
-import type {
-  GetFigmaImagesParams,
-  GetFigmaDataParams,
-  ReactComponentGeneratorParams,
-  FigmaWorkflowOrchestratorParams
-} from './tools'
+import { figmaSmartWorkflowTool } from './tools'
+import type { FigmaSmartWorkflowParams } from './tools'
 
 
 type CreateServerOptions = {
@@ -33,33 +23,19 @@ export const createServer = (options: CreateServerOptions) => {
 const registerTools = (mcpServer: McpServer, figmaService: FigmaService, options: Omit<CreateServerOptions, "figmaApiKey">) => {
   const { outputFormat } = options;
 
-  // 注册智能工作流编排器 - 主要工具
-  mcpServer.tool(
-    figmaWorkflowOrchestratorTool.name,
-    figmaWorkflowOrchestratorTool.description,
-    figmaWorkflowOrchestratorTool.parameters,
-    (args) => figmaWorkflowOrchestratorTool.execute({ ...args, ...options } as FigmaWorkflowOrchestratorParams, figmaService, outputFormat) as any
-  );
-
-  // 注册基础工具 - 可单独使用
-  mcpServer.tool(
-    getFigmaDataTool.name,
-    getFigmaDataTool.description,
-    getFigmaDataTool.parameters,
-    (args) => getFigmaDataTool.execute(args as GetFigmaDataParams, figmaService, outputFormat)
-  );
-
-  mcpServer.tool(
-    getFigmaImagesTool.name,
-    getFigmaImagesTool.description,
-    getFigmaImagesTool.parameters,
-    (args) => getFigmaImagesTool.execute(args as GetFigmaImagesParams, figmaService)
-  );
-
-  mcpServer.tool(
-    reactComponentGeneratorTool.name,
-    reactComponentGeneratorTool.description,
-    reactComponentGeneratorTool.parameters,
-    (args) => reactComponentGeneratorTool.execute(args as ReactComponentGeneratorParams) as any
+  /**
+   * Register the Figma Smart Workflow tool
+   * @param mcpServer - The MCP server instance
+   * @param figmaService - The Figma service instance
+   * @param options - The options for the server
+   * @returns The MCP server instance
+   */
+  mcpServer.registerTool(
+    figmaSmartWorkflowTool.name,
+    {
+      description: figmaSmartWorkflowTool.description,
+      inputSchema: figmaSmartWorkflowTool.parameters,
+    },
+    (args) => figmaSmartWorkflowTool.execute({ ...args, ...options } as FigmaSmartWorkflowParams, figmaService, outputFormat) as any
   );
 }

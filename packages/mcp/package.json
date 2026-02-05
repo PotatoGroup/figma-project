@@ -1,7 +1,7 @@
 {
   "name": "ant-frontend-mcp",
   "version": "0.0.1",
-  "description": "ant group frontend mcp",
+  "description": "ant group figma mcp",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
