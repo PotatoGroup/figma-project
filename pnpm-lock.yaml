@@ -93,6 +93,9 @@ importers:
 
   packages/skill:
     dependencies:
+      '@figma-project/extractors':
+        specifier: workspace:*
+        version: link:../extractors
       '@figma-project/service':
         specifier: workspace:*
         version: link:../service

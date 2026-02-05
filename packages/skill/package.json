@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "@figma-project/service": "workspace:*"
+    "@figma-project/service": "workspace:*",
+    "@figma-project/extractors": "workspace:*"
   }
 }

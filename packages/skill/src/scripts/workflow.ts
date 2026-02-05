@@ -1,6 +1,20 @@
 import path from "path";
+import fs from "fs";
 import { config as loadEnv } from "dotenv";
-import { FigmaService } from '@figma-project/service';
+import { FigmaService, fetchFigmaData, fetchFigmaAssets } from '@figma-project/service';
+import { parseFigmaUrl, smartExtractImageNodes } from '@figma-project/extractors';
+
+/**
+ * 返回 skill 根目录下的临时资源目录（与 dist/scripts 同级，即 dist/_assets_）。
+ * 若目录不存在则自动创建，保证返回的路径可直接使用。
+ */
+function getAssetsPath(): string {
+  const assetsPath = path.join(__dirname, "..", "_assets_");
+  if (!fs.existsSync(assetsPath)) {
+    fs.mkdirSync(assetsPath, { recursive: true });
+  }
+  return assetsPath;
+}
 
 /**
  * 从当前 skill 根目录的 .env 或项目运行时根目录的 .env 中获取 FIGMA_API_KEY，否则报错。
@@ -15,9 +29,10 @@ function getFigmaApiKey(): string {
   loadEnv({ path: path.join(runtimeRoot, ".env"), override: false });
   const figmaApiKey = process.env.FIGMA_API_KEY;
   if (!figmaApiKey) {
-    throw new Error(
+    console.error(
       "FIGMA_API_KEY is not set. Please set it in skill root .env or project root .env (FIGMA_API_KEY=your_token)"
     );
+    process.exit(1);
   }
   return figmaApiKey;
 }
@@ -27,10 +42,70 @@ function getFigmaApiKey(): string {
  * 解析figma-url，获取元数据、image资源、节点信息
  */
 
-function startFigmaService() {
+const FIGMA_NODES_FILENAME = "figmaNodes.yaml";
+
+export type StartFigmaServiceError = {
+  isError: true;
+  content: Array<{ type: "text"; text: string }>;
+};
+
+export type StartFigmaServiceSuccess = {
+  isError?: false;
+  /** 临时资源目录（skill 根目录下的 _assets_），内含 figmaNodes.yaml 与图片文件 */
+  assetsPath: string;
+  /** 大模型回答完成后调用，删除临时目录 _assets_ */
+  cleanup: () => void;
+};
+
+async function startFigmaService(
+  figmaUrl: string
+): Promise<StartFigmaServiceError | StartFigmaServiceSuccess> {
+  const urlInfo = parseFigmaUrl(figmaUrl);
+  if (!urlInfo.isValid) {
+    return {
+      isError: true,
+      content: [{
+        type: "text" as const,
+        text: `无效的Figma URL: ${figmaUrl}\n请提供有效的Figma文件或设计链接`
+      }]
+    };
+  }
   const figmaApiKey = getFigmaApiKey();
   const figmaService = new FigmaService(figmaApiKey);
-  return figmaService;
+  const assetsPath = getAssetsPath();
+
+  const figmaData = await fetchFigmaData(figmaService, {
+    fileKey: urlInfo.fileKey,
+    nodeId: urlInfo.nodeId,
+  });
+  const figmaDataPath = path.join(assetsPath, FIGMA_NODES_FILENAME);
+  fs.writeFileSync(figmaDataPath, typeof figmaData === "string" ? figmaData : String(figmaData), "utf-8");
+
+  const imageNodes = smartExtractImageNodes(
+    typeof figmaData === "string" ? figmaData : String(figmaData)
+  );
+  const figmaImagesParams = {
+    fileKey: urlInfo.fileKey,
+    nodes: imageNodes,
+    localPath: assetsPath,
+    pngScale: 2,
+  };
+  await fetchFigmaAssets(figmaService, figmaImagesParams);
+
+  const cleanup = () => {
+    try {
+      if (fs.existsSync(assetsPath)) {
+        fs.rmSync(assetsPath, { recursive: true, force: true });
+      }
+    } catch (err) {
+      console.warn("清理临时目录 _assets_ 失败:", err);
+    }
+  };
+
+  return {
+    assetsPath,
+    cleanup,
+  };
 }
 
 
