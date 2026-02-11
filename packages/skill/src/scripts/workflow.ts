@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { config as loadEnv } from "dotenv";
-import { FigmaService, fetchFigmaData, fetchFigmaAssets } from '@figma-project/service';
+import { FigmaService, fetchFigmaNodes, fetchFigmaAssets } from '@figma-project/service';
 import { parseFigmaUrl, smartExtractImageNodes } from '@figma-project/extractors';
 
 /**
@@ -9,7 +9,7 @@ import { parseFigmaUrl, smartExtractImageNodes } from '@figma-project/extractors
  * 若目录不存在则自动创建，保证返回的路径可直接使用。
  */
 function getAssetsPath(): string {
-  const assetsPath = path.join(__dirname, "..", "_assets_");
+  const assetsPath = path.join(process.cwd(), "_assets_");
   if (!fs.existsSync(assetsPath)) {
     fs.mkdirSync(assetsPath, { recursive: true });
   }
@@ -44,6 +44,17 @@ function getFigmaApiKey(): string {
 
 const FIGMA_NODES_FILENAME = "figmaNodes.yaml";
 
+/**
+ * Figma 网页 URL 中 node-id 使用连字符（如 420-1267），REST API 要求使用冒号（420:1267）。
+ * 将 URL 中的 node-id 转为 API 所需格式。
+ */
+function normalizeFigmaNodeId(nodeId: string): string {
+  if (/^\d+-\d+$/.test(nodeId)) {
+    return nodeId.replace("-", ":");
+  }
+  return nodeId;
+}
+
 export type StartFigmaServiceError = {
   isError: true;
   content: Array<{ type: "text"; text: string }>;
@@ -59,24 +70,24 @@ export type StartFigmaServiceSuccess = {
 
 export async function startFigmaService(
   figmaUrl: string
-): Promise<StartFigmaServiceError | StartFigmaServiceSuccess> {
+): Promise<{
+  assetsPath: string;
+  cleanup: () => void;
+}> {
   const urlInfo = parseFigmaUrl(figmaUrl);
   if (!urlInfo.isValid) {
-    return {
-      isError: true,
-      content: [{
-        type: "text" as const,
-        text: `无效的Figma URL: ${figmaUrl}\n请提供有效的Figma文件或设计链接`
-      }]
-    };
+    console.error(`无效的Figma URL: ${figmaUrl}\n请提供有效的Figma文件或设计链接`);
+    process.exit(1);
   }
+  // Figma 网页 URL 中 node-id 为连字符（如 420-1267），API 要求冒号（420:1267）
+  const nodeId = urlInfo.nodeId ? normalizeFigmaNodeId(urlInfo.nodeId) : undefined;
   const figmaApiKey = getFigmaApiKey();
   const figmaService = new FigmaService(figmaApiKey);
   const assetsPath = getAssetsPath();
 
-  const figmaData = await fetchFigmaData(figmaService, {
+  const figmaData = await fetchFigmaNodes(figmaService, {
     fileKey: urlInfo.fileKey,
-    nodeId: urlInfo.nodeId,
+    nodeId,
   });
   const figmaDataPath = path.join(assetsPath, FIGMA_NODES_FILENAME);
   fs.writeFileSync(figmaDataPath, typeof figmaData === "string" ? figmaData : String(figmaData), "utf-8");
@@ -107,12 +118,3 @@ export async function startFigmaService(
     cleanup,
   };
 }
-
-
-/**
- * extractors处理节点数据
- */
-
-/**
- * reference匹配组件，生成组件代码
- */

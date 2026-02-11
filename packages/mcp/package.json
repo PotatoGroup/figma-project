@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "dev": "father dev",
+    "dev": "father dev --no-clean",
     "build": "father build && cp -r src/prompts lib",
     "build:deps": "father prebundle",
     "prepublishOnly": "father doctor && npm run build"

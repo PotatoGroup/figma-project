@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { FigmaService } from '@figma-project/service'
-import { fetchFigmaData } from '@figma-project/service'
+import { fetchFigmaNodes } from '@figma-project/service'
 
 const parameters = {
   fileKey: z
@@ -27,7 +27,7 @@ export type GetFigmaDataParams = z.infer<typeof parametersSchema>;
 
 const getFigmaData = async (params: GetFigmaDataParams, figmaService: FigmaService, outputFormat: "yaml" | "json") => {
   try {
-    const result = await fetchFigmaData(figmaService, params);
+    const result = await fetchFigmaNodes(figmaService, params);
     const formattedResult =
       outputFormat === "json" ? JSON.stringify(result, null, 2) : result;
     return {

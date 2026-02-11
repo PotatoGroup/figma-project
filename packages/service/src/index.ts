@@ -1,3 +1,3 @@
 export * from "./service";
-export * from "./fetchFigmaData";
+export * from "./fetchFigmaNodes";
 export * from "./fetchFigmaAssets";

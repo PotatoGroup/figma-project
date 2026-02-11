@@ -7,7 +7,7 @@ const resolver = (result: Object) => {
   return yaml.dump(result);
 }
 
-export const fetchFigmaData = async (
+export const fetchFigmaNodes = async (
   service: FigmaService,
   options: { fileKey: string; nodeId?: string; depth?: number; resolver?: (result: Object) => any }
 ) => {

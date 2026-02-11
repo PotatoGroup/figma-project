@@ -5,10 +5,11 @@
   "main": "dist/scripts/index.js",
   "types": "dist/scripts/index.d.ts",
   "scripts": {
-    "dev": "father dev",
-    "build": "father build",
+    "dev": "father dev --no-clean",
+    "build": "npm run clean && tsc && node scripts/build-skill.mjs",
     "build:deps": "father prebundle",
-    "prepublishOnly": "father doctor && npm run build"
+    "prepublishOnly": "npm run build",
+    "clean": "rimraf ant-figma-skill"
   },
   "keywords": [],
   "authors": [
@@ -23,12 +24,12 @@
     "access": "public"
   },
   "devDependencies": {
-    "copy-webpack-plugin": "^12.0.0",
-    "father": "^4.6.13"
+    "father": "^4.6.13",
+    "rimraf": "^6.1.2"
   },
   "dependencies": {
-    "dotenv": "^17.2.3",
+    "@figma-project/extractors": "workspace:*",
     "@figma-project/service": "workspace:*",
-    "@figma-project/extractors": "workspace:*"
+    "dotenv": "^17.2.3"
   }
 }

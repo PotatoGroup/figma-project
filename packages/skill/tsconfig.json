@@ -1,4 +1,16 @@
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": {}
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["esnext"],
+    "outDir": "./ant-figma-skill/scripts",
+    "rootDir": "./src/scripts",
+    "target": "ES2015",
+    "sourceMap": false,
+    "declaration": false,
+    "declarationMap": false,
+    "skipLibCheck": true
+  },
+  "include": ["src/scripts/**/*"]
 }
