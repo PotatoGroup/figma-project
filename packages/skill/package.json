@@ -6,10 +6,14 @@
   "types": "dist/scripts/index.d.ts",
   "scripts": {
     "dev": "father dev --no-clean",
-    "build": "npm run clean && tsc && node scripts/build-skill.mjs",
+    "build": "npm run clean && node scripts/build-skill.mjs",
     "build:deps": "father prebundle",
     "prepublishOnly": "npm run build",
-    "clean": "rimraf ant-figma-skill"
+    "clean": "rimraf ant-figma-skill",
+    "verify": "ts-node src/scripts/index.ts https://www.figma.com/design/HEuPRTWEXeKj6iZ7uKgmC2/mPaaS-LingGo?node-id=420-1267&t=ni0CpZhjTDAeZRNY-4"
+  },
+  "bin": {
+    "ant-figma-skill": "ant-figma-skill/scripts/index.js"
   },
   "keywords": [],
   "authors": [
@@ -17,7 +21,7 @@
   ],
   "license": "MIT",
   "files": [
-    "dist",
+    "ant-figma-skill",
     "compiled"
   ],
   "publishConfig": {
@@ -25,7 +29,9 @@
   },
   "devDependencies": {
     "father": "^4.6.13",
-    "rimraf": "^6.1.2"
+    "rimraf": "^6.1.2",
+    "esbuild": "^0.24.0",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
     "@figma-project/extractors": "workspace:*",

@@ -59,12 +59,21 @@ function parseAPIResponse(data: GetFileResponse | GetFileNodesResponse) {
         Object.assign(aggregatedComponentSets, nodeResponse.componentSets);
       }
     });
-    nodesToParse = nodeResponses.map((n) => n.document).filter(isVisible);
+    // 过滤掉 document 为 null/undefined 的节点（如 404 未找到）
+    nodesToParse = nodeResponses
+      .map((n) => n.document)
+      .filter((doc): doc is NonNullable<typeof doc> => doc != null && isVisible(doc));
   } else {
     // GetFileResponse
     Object.assign(aggregatedComponents, data.components);
     Object.assign(aggregatedComponentSets, data.componentSets);
-    nodesToParse = data.document.children.filter(isVisible);
+    const document = data.document;
+    if (!document?.children?.length) {
+      throw new Error(
+        "Figma API 返回的 document 或 document.children 为空。请检查：1) 文件 Key 是否正确；2) API Token 是否有 file_content:read 权限；3) 文件是否为空"
+      );
+    }
+    nodesToParse = document.children.filter(isVisible);
   }
 
   const { name, lastModified, thumbnailUrl } = data;

@@ -164,13 +164,15 @@ function buildSimplifiedFrameValues(n: FigmaDocumentNode): SimplifiedLayout | { 
   }
 
   // TODO: convertAlign should be two functions, one for justifyContent and one for alignItems
+  // n.children 可能为 undefined（如 getFileNodes 未返回完整子树时），需兜底空数组
+  const children = n.children ?? [];
   frameValues.justifyContent = convertAlign(n.primaryAxisAlignItems ?? "MIN", {
-    children: n.children,
+    children,
     axis: "primary",
     mode: frameValues.mode,
   });
   frameValues.alignItems = convertAlign(n.counterAxisAlignItems ?? "MIN", {
-    children: n.children,
+    children,
     axis: "counter",
     mode: frameValues.mode,
   });

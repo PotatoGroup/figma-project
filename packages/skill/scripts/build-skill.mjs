@@ -1,33 +1,41 @@
 /**
- * ant-figma-skill 构建脚本：仅负责
- * 1. 拷贝 src 下除 scripts 以外的内容到 ant-figma-skill（scripts 已由 tsc 输出到 ant-figma-skill/scripts）
- * 2. 删除 ant-figma-skill/scripts 下的 .d.ts 文件
- * 3. 将 ant-figma-skill 打成 ant-figma-skill.zip
- *
- * 前置：需先执行 tsc，将 src/scripts 编译到 ant-figma-skill/scripts。
+ * ant-figma-skill 构建脚本：
+ * 1. esbuild 将 src/scripts 打成单文件 bundle，添加 shebang 使可直接在 Node 下运行，输出到 ant-figma-skill/scripts/index.js
+ * 2. 拷贝 src 下除 scripts 以外的文件/目录到 ant-figma-skill
+ * 3. 将 ant-figma-skill 压缩为 ant-figma-skill.zip
  */
 
 import path from "path";
 import fs from "fs";
 import { execSync } from "child_process";
 import { fileURLToPath } from "url";
+import { createRequire } from "module";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const cwd = path.resolve(__dirname, "..");
+const require = createRequire(import.meta.url);
 const distDir = path.join(cwd, "ant-figma-skill");
+const scriptsDir = path.join(distDir, "scripts");
 const zipName = "ant-figma-skill.zip";
 const zipPath = path.join(cwd, zipName);
-const scriptsDir = path.join(distDir, "scripts");
 
-function removeDeclarationFiles() {
-  if (!fs.existsSync(scriptsDir)) return;
-  const entries = fs.readdirSync(scriptsDir, { withFileTypes: true });
-  for (const ent of entries) {
-    if (ent.isFile() && ent.name.endsWith(".d.ts")) {
-      fs.unlinkSync(path.join(scriptsDir, ent.name));
-    }
+async function bundleScripts() {
+  const esbuild = require("esbuild");
+  if (!fs.existsSync(scriptsDir)) {
+    fs.mkdirSync(scriptsDir, { recursive: true });
   }
-  console.log("  removed .d.ts from ant-figma-skill/scripts");
+  await esbuild.build({
+    entryPoints: [path.join(cwd, "src", "scripts", "index.ts")],
+    bundle: true,
+    platform: "node",
+    format: "cjs",
+    outfile: path.join(scriptsDir, "index.js"),
+    minify: false,
+    sourcemap: false,
+    external: ["sharp"],
+    banner: { js: "#!/usr/bin/env node\n" },
+  });
+  console.log("  bundled src/scripts -> ant-figma-skill/scripts/index.js (CLI)");
 }
 
 function copyNonScripts() {
@@ -57,7 +65,7 @@ function copyNonScripts() {
 
 function zipDist() {
   if (!fs.existsSync(distDir)) {
-    console.error("ant-figma-skill 不存在，请先执行 tsc 与拷贝");
+    console.error("ant-figma-skill 不存在");
     process.exit(1);
   }
   execSync(`zip -rq "${zipPath}" .`, {
@@ -68,16 +76,40 @@ function zipDist() {
   console.log(`  generated ${zipName} (${(stat.size / 1024).toFixed(2)} KB)`);
 }
 
-async function main() {
-  console.log("build-skill: copy (non-scripts only)...");
-  copyNonScripts();
-  removeDeclarationFiles();
-  console.log("build-skill: zip...");
-  zipDist();
-  console.log("build-skill: done.");
+/** 验证 scripts/index.js 在 Node 下可正常执行 */
+function verifyNodeExecution() {
+  const scriptPath = path.join(scriptsDir, "index.js");
+  if (!fs.existsSync(scriptPath)) {
+    console.error("  verify failed: index.js 不存在");
+    process.exit(1);
+  }
+  try {
+    execSync(`node "${scriptPath}" --help`, {
+      stdio: "pipe",
+      encoding: "utf-8",
+    });
+    console.log("  verified: node ant-figma-skill/scripts/index.js --help ✓");
+  } catch (err) {
+    console.error("  verify failed: Node 执行失败", err?.message || err);
+    process.exit(1);
+  }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+async function main() {
+  try {
+    console.log("build-skill: bundle (CLI)...");
+    await bundleScripts();
+    console.log("build-skill: copy (non-scripts only)...");
+    copyNonScripts();
+    console.log("build-skill: verify (Node)...");
+    verifyNodeExecution();
+    console.log("build-skill: zip...");
+    zipDist();
+    console.log("build-skill: done.");
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
+}
+
+main();

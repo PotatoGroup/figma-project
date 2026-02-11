@@ -1,6 +1,15 @@
 import fs from "fs";
-import sharp from "sharp";
 import type { Transform } from "@figma/rest-api-spec";
+
+/** 懒加载 sharp，避免在无 sharp 的 Node 环境（如 skill 单文件运行时）加载失败 */
+function getSharp(): typeof import("sharp") | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require("sharp") as typeof import("sharp");
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Apply crop transform to an image based on Figma's transformation matrix
@@ -14,6 +23,11 @@ export async function applyCropTransform(
 ): Promise<string> {
   const { Logger } = await import("./logger.js");
 
+  const sharp = getSharp();
+  if (!sharp) {
+    Logger.log(`sharp not available, skipping crop for ${imagePath}`);
+    return imagePath;
+  }
   try {
     // Extract transform values
     const scaleX = cropTransform[0]?.[0] ?? 1;
@@ -91,7 +105,11 @@ export async function getImageDimensions(imagePath: string): Promise<{
   height: number;
 }> {
   const { Logger } = await import("./logger.js");
-
+  const sharp = getSharp();
+  if (!sharp) {
+    Logger.log(`sharp not available, using default dimensions for ${imagePath}`);
+    return { width: 1000, height: 1000 };
+  }
   try {
     const metadata = await sharp(imagePath).metadata();
 

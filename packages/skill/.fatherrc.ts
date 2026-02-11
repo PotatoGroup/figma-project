@@ -1,7 +1,12 @@
 import { defineConfig } from "father";
 
 /**
- * 本包不再使用 father 做 UMD 打包。
- * 仅保留空配置；构建（文件拷贝 + zip）由 scripts/build-skill.mjs 完成。
+ * cjs: 仅编译 src/scripts，输出到 ant-figma-skill/scripts，避免 reference 等非 scripts 内容进入 scripts 目录。
+ * build-skill.mjs: 拷贝 src 下除 scripts 外的内容到 ant-figma-skill，并 zip。
  */
-export default defineConfig({});
+export default defineConfig({
+  cjs: {
+    input: "src/scripts",
+    output: "ant-figma-skill/scripts",
+  },
+});

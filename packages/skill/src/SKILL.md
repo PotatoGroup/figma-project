@@ -12,7 +12,7 @@ description: A complete workflow that automatically retrieves design data, downl
 1. **获取 Figma 数据**：用 Figma REST API 获取节点与图片资源，在 skill 脚本中做必要数据处理，输出 YAML 至 `_assets_/figmaNodes.yaml`，图片等资源下载到 `_assets_/`。
 2. **匹配组件**：根据 YAML 数据结构在 `reference/` 中匹配合适组件（如 `reference/antd.csv`、`reference/nodeMapping.md`）。
 3. **生成代码**：基于 React 与 Ant Design，利用匹配到的组件完整还原 UI 设计；图片使用 `_assets_/` 中的路径。
-4. **清除临时文件**：大模型回答完成后调用返回的 `cleanup()`，删除 `_assets_/` 目录及其中所有临时文件。
+4. **清除临时文件**：大模型回答完成后，**调用方**需调用 Step 1 返回的 `cleanup()`，删除 `_assets_/` 目录及其中所有临时文件；若未调用，`_assets_/` 会一直保留。
 
 ---
 
@@ -24,12 +24,12 @@ description: A complete workflow that automatically retrieves design data, downl
 
 ### 本 skill 脚本（workflow）
 
-通过 skill`scripts/bin.js` 完成 Step 1：
+通过 skill 的 `scripts/index.js` 完成 Step 1：
 
 - 解析 URL 得到 `fileKey`、`nodeId`（见下方 URL 解析规则）。
 - 使用 `FIGMA_API_KEY` 创建 `FigmaService`，调用 `fetchFigmaNodes` 获取节点数据，写入 `_assets_/figmaNodes.yaml`。
 - 使用 `smartExtractImageNodes` 从 YAML 中提取需要下载的图片节点，再调用 `fetchFigmaAssets` 将图片下载到 `_assets_/`。
-- 返回 `{ assetsPath: "_assets_ 的绝对路径", cleanup }`；**Step 4 时调用 `cleanup()` 清除临时文件**。
+- 返回 `{ assetsPath: "_assets_ 的绝对路径", cleanup }`；**调用方需在流程结束后调用 `cleanup()` 清除临时文件**（见 Step 4）。
 
 URL 解析规则：
 
@@ -66,5 +66,9 @@ URL 解析规则：
 
 ## Step 4: 清除临时文件
 
-在回答/生成流程结束后，调用 Step 1 返回的 **`reset()`**，删除 skill 根目录下的 **`_assets_/`** 目录及其中的全部临时文件（含 `figmaNodes.yaml` 与下载的图片）。  
-若未使用本 skill 的 Step1，则需自行删除所使用的临时资源目录。
+**重要**：`_assets_/` 不会自动删除，需由调用方主动清理。
+
+- 在回答/生成流程结束后，调用 Step 1 返回的 **`cleanup()`**，删除 skill 根目录下的 **`_assets_/`** 目录及其中的全部临时文件（含 `figmaNodes.yaml` 与下载的图片）。
+- 若 skill 以 CLI 方式单独运行（`node scripts/index.js <Figma URL>`），脚本结束时会输出 `assetsPath`，但**不会**自动调用 `cleanup()`，需调用方或用户自行删除 `_assets_/`。
+- 若通过 MCP/Agent 等集成使用，应在「大模型回答完成、代码生成结束」时调用 `cleanup()`，或在适当的生命周期钩子中执行清理。
+- 若未使用本 skill 的 Step 1，则需自行删除所使用的临时资源目录。
