@@ -9,10 +9,7 @@
     "build": "npm run clean && node scripts/build-skill.mjs",
     "build:deps": "father prebundle",
     "prepublishOnly": "npm run build",
-    "clean": "rimraf ant-figma-skill"
-  },
-  "bin": {
-    "ant-figma-skill": "ant-figma-skill/scripts/index.js"
+    "clean": "rimraf implement-design"
   },
   "keywords": [],
   "authors": [
@@ -20,20 +17,14 @@
   ],
   "license": "MIT",
   "files": [
-    "ant-figma-skill",
+    "implement-design",
     "compiled"
   ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "esbuild": "^0.24.0",
     "father": "^4.6.13",
     "rimraf": "^6.1.2"
-  },
-  "dependencies": {
-    "@figma-project/extractors": "workspace:*",
-    "@figma-project/service": "workspace:*",
-    "dotenv": "^17.2.3"
   }
 }
