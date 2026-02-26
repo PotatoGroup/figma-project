@@ -1,7 +1,7 @@
 {
-  "name": "ant-figma-skill",
+  "name": "implement-design",
   "version": "0.0.1",
-  "description": "ant group figma skill",
+  "description": "implement design figma skill",
   "main": "dist/scripts/index.js",
   "types": "dist/scripts/index.d.ts",
   "scripts": {
@@ -9,8 +9,7 @@
     "build": "npm run clean && node scripts/build-skill.mjs",
     "build:deps": "father prebundle",
     "prepublishOnly": "npm run build",
-    "clean": "rimraf ant-figma-skill",
-    "verify": "ts-node src/scripts/index.ts https://www.figma.com/design/HEuPRTWEXeKj6iZ7uKgmC2/mPaaS-LingGo?node-id=420-1267&t=ni0CpZhjTDAeZRNY-4"
+    "clean": "rimraf ant-figma-skill"
   },
   "bin": {
     "ant-figma-skill": "ant-figma-skill/scripts/index.js"
@@ -28,10 +27,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "father": "^4.6.13",
-    "rimraf": "^6.1.2",
     "esbuild": "^0.24.0",
-    "ts-node": "^10.9.2"
+    "father": "^4.6.13",
+    "rimraf": "^6.1.2"
   },
   "dependencies": {
     "@figma-project/extractors": "workspace:*",
