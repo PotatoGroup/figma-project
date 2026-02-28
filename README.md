@@ -13,10 +13,10 @@
 ```
 figma-project/
 ├── packages/
-│   ├── extractors/   # 设计数据提取与图片处理
-│   ├── service/      # Figma REST API 封装
+│   ├── extractors/   # 设计数据提取与图片处理（@figma-project/extractors）
+│   ├── service/      # Figma REST API 封装（@figma-project/service）
 │   ├── mcp/          # MCP 服务（ant-figma-mcp）
-│   └── skill/        # 技能与参考（@figma-project/skill）
+│   └── skill/        # 设计稿转代码技能与参考（implement-design）
 ├── pnpm-workspace.yaml
 ├── turbo.json
 └── package.json
@@ -26,10 +26,10 @@ figma-project/
 
 | 包名 | 能力说明 |
 |------|----------|
-| **@figma-project/extractors** | **数据提取**：从 Figma 原始节点提取布局（layout）、文本与样式（text/textStyle）、视觉（fills/strokes/effects/opacity/borderRadius）、组件实例（componentId/componentProperties）；`simplifyRawFigmaObject` 统一简化整文件/节点树，支持 `layoutAndText`、`allExtractors` 等组合。<br>**图片**：基于 sharp 的裁剪与尺寸处理、Figma 变换矩阵裁剪；`parseFigmaUrl` 解析 Figma URL；`smartExtractImageNodes` 智能识别并提取图片节点。 |
-| **@figma-project/service** | 封装 Figma REST API：`getRawFile` / `getRawNodes` 获取文件或节点原始 JSON；`getImageFillUrls` 图片填充 URL 映射；`getNodeRenderUrls` 节点渲染图 URL（PNG/SVG，支持 scale）；`getImages` 下载图片到本地并调用 extractors 做裁剪与尺寸处理（支持 imageRef / nodeId）。 |
-| **ant-figma-mcp** | MCP 服务，提供四类工具：**get_figma_data**（按 fileKey/nodeId 获取设计数据，输出 YAML/JSON）；**get_figma_images**（按节点列表下载 PNG/SVG 到指定目录）；**figma_workflow_orchestrator**（一站式：解析 URL → 拉取数据 → 下载图片 → 生成 React 组件规则）；**react_component_generator**（基于 Figma 数据与图片生成 React + Ant Design 组件提示与规范）。需配置 `FIGMA_ACCESS_TOKEN`。 |
-| **@figma-project/skill** | 技能与参考包，提供 Figma 相关技能说明与参考文档（如 antd 组件映射、节点映射等），供 Cursor 等场景使用。 |
+| **@figma-project/extractors** | **数据提取**：从 Figma 原始节点提取布局（layout）、文本与样式（text/textStyle）、视觉（fills/strokes/effects/opacity/borderRadius）、组件实例（componentId/componentProperties）；`simplifyRawFigmaObject` 统一简化整文件/节点树，支持 `layoutAndText`、`allExtractors` 等组合；`extractFromDesign` 对原始节点数组做遍历提取。<br>**图片**：基于 sharp 的裁剪与尺寸处理、Figma 变换矩阵裁剪（`downloadAndProcessImage`、`applyCropTransform`）；`parseFigmaUrl` 解析 Figma URL；`smartExtractImageNodes` 从设计数据中智能识别并提取图片节点。 |
+| **@figma-project/service** | 封装 Figma REST API：`getRawFile` / `getRawNodes` 获取文件或节点原始 JSON；`getImageFillUrls` 图片填充 URL 映射；`getNodeRenderUrls` 节点渲染图 URL（PNG/SVG，支持 scale 与 SVG 选项）；`getImages` 按 nodeId/imageRef 列表下载图片到本地并调用 extractors 做裁剪与尺寸处理。另导出 `fetchFigmaNodes`、`fetchFigmaAssets` 供上层使用。 |
+| **ant-figma-mcp** | MCP 服务，提供工具 **FigmaSmartWorkflow**：传入 Figma URL 后自动完成「解析 URL → 拉取设计数据 → 下载图片资源 → 生成 React 组件规则」的一站式工作流；支持可选参数 componentName、outputPath、imageOutputPath、includeImages、depth、json。需配置 `FIGMA_API_KEY`（或 `--figma-api-key`）。 |
+| **implement-design** | 设计稿转代码 Skill，提供流程说明与实现规则（SKILL.md）、Ant Design 组件映射参考（reference/antd.csv）、Figma MCP 配置脚本与故障排查文档，供 Cursor 等场景实现「Figma 链接/选区 → 1:1 React 组件」时使用。 |
 
 ## 环境要求
 
@@ -77,7 +77,7 @@ pnpm release        # 以 release 模式发布各包（pnpm publish -r）
 ```ts
 import { FigmaService } from '@figma-project/service';
 
-const service = new FigmaService(process.env.FIGMA_ACCESS_TOKEN!);
+const service = new FigmaService(process.env.FIGMA_API_KEY!);
 
 // 获取文件原始 JSON
 const file = await service.getRawFile('your-file-key');
@@ -106,16 +106,13 @@ const { nodes } = extractFromDesign(rawNodes, layoutAndText, { maxDepth: 10 });
 
 ### 使用 MCP 服务（ant-figma-mcp）
 
-在 Cursor 等支持 MCP 的 IDE 中配置 **ant-figma-mcp** 后，可通过以下工具调用：
+在 Cursor 等支持 MCP 的 IDE 中配置 **ant-figma-mcp** 后，可使用工具 **FigmaSmartWorkflow**：
 
 | 工具 | 说明 |
 |------|------|
-| **figma_workflow_orchestrator** | 传入 Figma 设计链接，自动完成「取数 → 下载图片 → 生成 React 组件规则」全流程（推荐） |
-| **get_figma_data** | 按 fileKey（可选 nodeId、depth）拉取设计数据，输出 YAML/JSON |
-| **get_figma_images** | 按节点列表将 PNG/SVG 下载到指定 `localPath`，支持裁剪与尺寸信息 |
-| **react_component_generator** | 传入 Figma 数据与图片信息，获取生成 React + Ant Design 组件的提示与规范 |
+| **FigmaSmartWorkflow** | 传入 Figma 设计链接，自动完成「解析 URL → 拉取设计数据 → 下载图片 → 生成 React 组件规则」全流程；可配 componentName、outputPath、imageOutputPath、includeImages、depth、json 等参数。 |
 
-运行前需在环境中设置 `FIGMA_ACCESS_TOKEN`（或在 MCP 包目录下的 `.env` 中配置）。
+运行前需提供 Figma API Key：命令行 `--figma-api-key=YOUR_TOKEN`，或环境变量 `FIGMA_API_KEY`，或 `.env` 中配置。
 
 ## 依赖关系
 
@@ -125,7 +122,7 @@ extractors     (无内部 workspace 依赖)
 service        (依赖 extractors)
     ↑
 mcp            (依赖 extractors、service)
-skill          (无内部 workspace 依赖)
+skill          (implement-design，无内部 workspace 依赖)
 ```
 
 ## 更多文档
@@ -133,7 +130,7 @@ skill          (无内部 workspace 依赖)
 - [extractors 使用说明](packages/extractors/README.md)
 - [service API 说明](packages/service/README.md)
 - [MCP 配置与工具说明](packages/mcp/README.md)
-- [skill 技能与参考](packages/skill/README.md)
+- [skill 设计稿转代码技能与参考](packages/skill/README.md)
 
 ## 许可证
 
